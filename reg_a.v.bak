@@ -1,0 +1,41 @@
+module reg_a(
+  input clk, rst_b, c0, c2, c4, c5, //c2 e pt suma, c4 pentru shiftare, c5 pentru descarcare pe outbus
+  input [7:0] sum,
+  //output reg a_lsb, a_msb,
+  output reg [7:0] obus, q
+);
+
+ //reg a_msb;
+ reg a_lsb;
+
+always@(posedge clk, negedge rst_b) begin
+  if(!rst_b) // if rst_b == 0
+    q <= 0;
+  else if (c0)
+   begin
+    q <= 0;
+    a_lsb<=q[0];
+    //a_msb<=q[7];
+  end
+    
+  else if(c2)
+    q <= sum;
+  else if(c4)begin
+    a_lsb <= q[0];
+    //a_msb <= q[7];
+    q <= (q >> 1);
+    q[7] = q[6];
+  end
+
+    
+end
+
+
+always @(*) begin
+  if(c5) 
+    obus <= q;
+  else obus <= 8'bz;
+end
+
+endmodule
+

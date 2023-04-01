@@ -1,0 +1,15 @@
+module xor_gate(
+  input c3,
+  input [7:0] m,
+  output [7:0] rez
+);
+
+generate 
+  genvar i;
+    for(i = 0; i < 8; i = i + 1)
+      begin : vect
+        xor_m_c3 inst_xor(.m(m[i]), .cin(c3), .out(rez[i]));
+    end
+endgenerate
+
+endmodule

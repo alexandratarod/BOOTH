@@ -1,0 +1,172 @@
+/*module control_unit(
+  input clk, rst_b, bgn, q_1, q0, count7, // q_1 e q[-1] adica iesirea din reg_q_1, q0 e ultimul bit din Q adica q0 = Q[0] 
+  output reg c0, c1, c2, c3, c4, c5, c6, stop // stop = end
+);
+
+
+localparam S0 = 4'b0000;
+localparam S1 = 4'b0001;
+localparam S2 = 4'b0010;
+localparam S3 = 4'b0011;
+localparam S4 = 4'b0100;
+localparam S5 = 4'b0101;
+localparam S6 = 4'b0110;
+localparam S7 = 4'b0111;
+localparam S8 = 4'b1000;
+reg [3:0] st;
+reg [3:0] st_nxt;
+  
+  always@(*) begin
+    
+    case(st)
+      S0 : begin 
+            stop = 0;
+            c0=0;c1=0;c2=0;c3=0;c4=0;c5=0;c6=0;
+            if(bgn) st_nxt = S1;
+              else st_nxt = S0;
+            end
+      S1 : begin
+            c0=1;
+            st_nxt = S2;
+          end 
+      S2 : begin
+            c0=0;  //acum sunt toti clks pe 0
+            c1 = 1; 
+            c4 = 0;
+            if(q0 == 0 && q_1 == 1) st_nxt = S3;
+            else if(q0 == 1 && q_1 == 0) st_nxt = S4;
+            else st_nxt = S5;   
+          end
+      S3 : begin
+            c1=0;
+            c2=1;
+            st_nxt = S5;
+          end
+      S4 : begin
+            c1=0;
+            c2= 1;
+            c3 = 1;
+            st_nxt = S5;
+          end
+      S5 : begin
+            c1=0;
+            c2 = 0;
+            c3 = 0;
+            c4 = 1;
+            if(count7 == 0)
+              st_nxt = S2;
+            else st_nxt = S6;
+          end
+          
+       S6 : begin
+            c1=0;
+            c2=0;
+            c3=0;
+            c4=0;
+            c5=1;
+            st_nxt = S7;
+          end
+          
+        S7 : begin
+            c5=0;
+            c6=1;
+//            stop = 1;
+            //bgn = 0;
+            st_nxt = S0;
+    
+          end
+        S8 : begin stop = 1;
+          c6 = 0;
+      end
+    endcase
+    
+end
+
+
+always@(posedge clk, negedge rst_b) begin
+  if(!rst_b) st <= S0; // rst_b asincton, if(rst_b==0)
+  else st <= st_nxt;
+end
+
+
+endmodule
+*/
+module control_unit(
+  input clk, rst_b, bgn, q_1, q0, count7, // q_1 e q[-1] adica iesirea din reg_q_1, q0 e ultimul bit din Q adica q0 = Q[0] 
+  output reg c0, c1, c2, c3, c4, c5, c6, stop // stop = end
+);
+
+
+localparam S0 = 4'b0000;
+localparam S1 = 4'b0001;
+localparam S2 = 4'b0010;
+localparam S3 = 4'b0011;
+localparam S4 = 4'b0100;
+localparam S5 = 4'b0101;
+localparam S6 = 4'b0110;
+localparam S7 = 4'b0111;
+localparam S8 = 4'b1000;
+localparam S9 = 4'b1001;
+
+reg [3:0] st;
+reg [3:0] st_nxt;
+  
+  always@(*) begin
+    st_nxt = st;
+    case(st)
+      S0 : begin 
+            if(bgn) st_nxt = S1;
+              else st_nxt = S0;
+            end
+      S1 : begin
+            st_nxt = S2;
+          end 
+      S2: st_nxt = S3;
+      S3 : begin
+            if(q0 == 0 && q_1 == 1) st_nxt = S4;
+            else if(q0 == 1 && q_1 == 0) st_nxt = S5;
+            else st_nxt = S6;   
+          end
+      S4 : st_nxt = S6;
+      S5 : st_nxt = S6;
+      S6 : begin
+            if(count7 == 0)
+              st_nxt = S3;
+            else st_nxt = S7;
+          end
+          
+      S7 : st_nxt = S8; 
+      S8 : st_nxt = S9;
+      S9 : st_nxt = S0;
+    endcase
+    
+end
+
+always@(*) begin
+  stop = 0;
+  c0=0;c1=0;c2=0;c3=0;c4=0;c5=0;c6=0;
+  case(st)
+    S1: c0 = 1;
+    S2: begin c0 = 0; c1=1; end
+    S3: begin c1 = 0; c4 = 0; end
+    S4: begin c1 = 0; c2 = 1; end
+    S5: begin c1 = 0; c2 = 1; c3 = 1; end
+    S6: begin c2 = 0; c3 = 0; c4 = 1; end
+    S7: begin c4 = 0; c5 = 1; end
+    S8: begin c5 = 0; c6 = 1; end
+    S9: begin c6 = 0; stop =1; end
+  endcase
+end
+
+
+always@(posedge clk, negedge rst_b) begin
+  if(!rst_b) 
+  begin
+    st <= S0; 
+    stop <= 0;
+    c0<=0;c1<=0;c2<=0;c3<=0;c4<=0;c5<=0;c6<=0;
+  end
+    else st <= st_nxt;
+end
+
+endmodule
